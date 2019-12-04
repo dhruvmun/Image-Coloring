@@ -15,9 +15,9 @@ class CNN:
 		std = 0.5
 
 		conv_layer1_weights = np.random.normal(mean, std,(filter_size, filter_size, input_channels, no_of_filters1))
-    	conv_layer1_biases = np.zeros((1, no_of_filters1))
-    	conv_layer2_weights = np.random.normal(mean, std,(filter_size, filter_size, no_of_filters1, no_of_filters2))
-    	conv_layer2_biases = np.zeros((1, no_of_filters2))	
+		conv_layer1_biases = np.zeros((1, no_of_filters1))
+		conv_layer2_weights = np.random.normal(mean, std,(filter_size, filter_size, no_of_filters1, no_of_filters2))
+		conv_layer2_biases = np.zeros((1, no_of_filters2))	
 
 
 	def sigmoid(x):
@@ -33,12 +33,12 @@ class CNN:
 	def conv_layer(image, filter, bias):
 		m,row,col,channels = image.shape
 		nf = filter.shape[3]
-		new_image = np.zeros((m, n-filter_size+1, n-filter_size+1, nf))
+		new_image = np.zeros((m, row-filter_size+1, col-filter_size+1, nf))
 
-		for i in m:
+		for i in range(m):
 			img = image[i]
-			for r in range(row-filter_size):
-				for c in range(col-filter_size):
+			for r in range(row-filter_size+1):
+				for c in range(col-filter_size+1):
 					x = img[r:r+filter_size, c:c+filter_size, :]
 					for f in range(nf):
 						new_image[i,r,c,f] = conv(x,filter[:,:,:,f],bias[:,f])
@@ -46,10 +46,14 @@ class CNN:
 		return new_image
 
 
-
-
-
-
-
-
+	def forward_prop(image):
+		initialize_parameters()
+		conv_layer1 = conv_layer(image, conv_layer1_weights, conv_layer1_biases)
+		maxpool1 = maxpool(conv_layer1)
+		conv_layer2 = conv_layer(maxpool1, conv_layer2_weights, conv_layer2_biases)
+		maxpool2 = maxpool(conv_layer2)
+		deconv_layer1 = deconv_layer()
+		unmaxpool1 = unmaxpool()
+		deconv_layer2 = deconv_layer()
+		unmaxpool2 = unmaxpool()
 
