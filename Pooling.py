@@ -16,7 +16,7 @@ class Pooling:
             for r in range(new_row):
                 for c in range(new_col):
                     for d in range(channels):
-                         new_image[i,r,c,d]=findMax(img[r:r+2,c:c+2,d])
+                         new_image[i,r,c,d]=findMax(img[r:2*r+2,c:2*c+2,d])
         return new_image
 
 
@@ -32,5 +32,5 @@ class Pooling:
                 for c in range(col):
                     for d in range(channels):
                         new_image[i,r:r+2,c:c+2,d]=img[r,c,d]
-                        
+
         return new_image
