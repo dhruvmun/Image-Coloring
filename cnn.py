@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class CNN:
     def __init__(self):
         self.image_size = 28
@@ -63,6 +62,7 @@ class CNN:
                         new_image[i, r, c, f] = self.conv(x, filter[:, :, :, f], bias[:, f])
         return new_image
 
+
     def maxpool(self, image):
         count_images, row, col, channels = image.shape
         new_row = row // 2
@@ -77,11 +77,13 @@ class CNN:
                         new_image[i, r, c, d] = np.max(img[2 * r:2 * r + 2, 2 * c:2 * c + 2, d])
         return new_image
 
+
     def deconv_layer(self, image, filter, bias):
         pad = (self.filter_size - 1) // 2
         image_pad = np.pad(image, ((0, 0), (pad, pad), (pad, pad), (0, 0)), 'constant', constant_values=0)
         new_image = self.conv_layer(image_pad, filter, bias, False)
         return new_image
+
 
     def unPooling(self, image):
         count_image, row, col, channels = image.shape
