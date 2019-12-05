@@ -94,23 +94,22 @@ class CNN:
 	def forward_prop(self,image):
 		self.initialize_parameters()
 		print(image.shape)
-		conv_layer1 = self.conv_layer(image, self.parameters['conv_layer1_weights'], self.parameters['conv_layer1_biases'], True)
-		print(conv_layer1.shape)
-		maxpool1 = self.maxpool(conv_layer1)
-		print(maxpool1.shape)
-		conv_layer2 = self.conv_layer(maxpool1, self.parameters['conv_layer2_weights'], self.parameters['conv_layer2_biases'], True)
-		print(conv_layer2.shape)
-		maxpool2 = self.maxpool(conv_layer2)
-		print(maxpool2.shape)
-		unpool1 = self.unPooling(maxpool2)
-		print(unpool1.shape)
-		deconv_layer1 = self.deconv_layer(unpool1, self.parameters['deconv_layer1_weights'], self.parameters['deconv_layer1_biases'])
-		print(deconv_layer1.shape)
-		unpool2 = self.unPooling(deconv_layer1)
-		print(unpool2.shape)
-		deconv_layer2 = self.deconv_layer(unmaxpool2, self.parameters['deconv_layer2_weights'], self.parameters['deconv_layer2_biases'])
-		print(deconv_layer2.shape)
-		return deconv_layer2
+		self.layers['conv_layer1'] = self.conv_layer(image, self.parameters['conv_layer1_weights'], self.parameters['conv_layer1_biases'], True)
+		print(self.layers['conv_layer1'].shape)
+		self.layers['maxpool1'] = self.maxpool(self.layers['conv_layer1'])
+		print(self.layers['maxpool1'].shape)
+		self.layers['conv_layer2'] = self.conv_layer(self.layers['maxpool1'], self.parameters['conv_layer2_weights'], self.parameters['conv_layer2_biases'], True)
+		print(self.layers['conv_layer2'].shape)
+		self.layers['maxpool2'] = self.maxpool(self.layers['conv_layer2'])
+		print(self.layers['maxpool2'].shape)
+		self.layers['unpool1'] = self.unPooling(self.layers['maxpool2'])
+		print(self.layers['unpool1'].shape)
+		self.layers['deconv_layer1'] = self.deconv_layer(self.layers['unpool1'], self.parameters['deconv_layer1_weights'], self.parameters['deconv_layer1_biases'])
+		print(self.layers['deconv_layer1'].shape)
+		self.layers['unpool2'] = self.unPooling(self.layers['deconv_layer1'])
+		print(self.layers['unpool2'].shape)
+		self.layers['deconv_layer2'] = self.deconv_layer(self.layers['unpool2'], self.parameters['deconv_layer2_weights'], self.parameters['deconv_layer2_biases'])
+		print(self.layers['deconv_layer2'].shape)
 
 
 	def initialize_derivatives(self, m):
@@ -136,51 +135,51 @@ class CNN:
 		image_pad = np.pad(image, ((0, 0), (pad, pad), (pad, pad), (0, 0)), 'constant', constant_values=0)
 		
 		for i in range(m):
-	        img = image_pad[i]
-    	    da = dA_pad[i]
-        	for r in range(row2): 
-            	for c in range(col2):
-                	x = img[r:r+self.filter_size, c:c+self.filter_size, :]
-                	for f in range(nf):
-                		da[r:r+self.filter_size, c:c+self.filter_size, :] += filter[:,:,:,c] * dz[i, h, w, c]
-                    	dW[:,:,:,c] += x * dz[i, h, w, c]
-                    	db[:,:,:,c] += dz[i, h, w, c]
-        	derv_prev_image[i, :, :, :] = da[pad:-pad, pad:-pad, :]
-        return derv_prev_image
+			img = image_pad[i]
+			da = dA_pad[i]
+			for r in range(row2): 
+				for c in range(col2):
+					x = img[r:r+self.filter_size, c:c+self.filter_size, :]
+					for f in range(nf):
+						da[r:r+self.filter_size, c:c+self.filter_size, :] += filter[:,:,:,c] * dz[i, h, w, c]
+						dW[:,:,:,c] += x * dz[i, h, w, c]
+						db[:,:,:,c] += dz[i, h, w, c]
+			derv_prev_image[i, :, :, :] = da[pad:-pad, pad:-pad, :]
+		return derv_prev_image
 
 
-    def maxpool_backprop():
+	#def maxpool_backprop():
 
 
-    def unpool_backprop():
+	#def unpool_backprop():
 
 
-    def learning_algorithm():
+	#def learning_algorithm():
 
 
-    def backprop():
-    	self.initialize_derivatives()
-    	derv_deconv2 = self.conv_backprop(loss,self.derivatives['deconv_layer2_weights'],self.derivatives['deconv_layer2_biases'],unmaxpool2)
+	def backprop():
+		self.initialize_derivatives()
+		derv_deconv2 = self.conv_backprop(loss,self.derivatives['deconv_layer2_weights'],self.derivatives['deconv_layer2_biases'],self.layers['unpool2'])
 		print(derv_deconv2.shape)
-		derv_unpool2 = self.unpool_backprop(derv_deconv2)
+		derv_unpool2 = self.unpool_backprop(derv_deconv2, self.layers['deconv_layer1'])
 		print(derv_unpool2.shape)
-		derv_deconv1 = self.conv_backprop(derv_unpool2,self.derivatives['deconv_layer1_weights'],self.derivatives['deconv_layer1_biases'],unmaxpool1)
+		derv_deconv1 = self.conv_backprop(derv_unpool2,self.derivatives['deconv_layer1_weights'],self.derivatives['deconv_layer1_biases'],self.layers['unpool1'])
 		print(derv_deconv1.shape)
-		derv_unpool1 = self.unpool_backprop(derv_deconv2)
+		derv_unpool1 = self.unpool_backprop(derv_deconv2, self.layers['maxpool2'])
 		print(derv_unpool2.shape)		
-		derv_pool2 = self.unpool_backprop(derv_unpool1)
+		derv_pool2 = self.unpool_backprop(derv_unpool1, self.layers['conv_layer2'])
 		print(derv_pool2.shape)
-		derv_conv2 = self.conv_backprop(derv_pool2,self.derivatives['conv_layer2_weights'],self.derivatives['conv_layer2_biases'],maxpool1)
+		derv_conv2 = self.conv_backprop(derv_pool2,self.derivatives['conv_layer2_weights'],self.derivatives['conv_layer2_biases'],self.layers['maxpool1'])
 		print(derv_conv2.shape)
-		derv_pool1 = self.unpool_backprop(derv_deconv2)
+		derv_pool1 = self.unpool_backprop(derv_conv2, self.layers['conv_layer1'])
 		print(derv_pool1.shape)
-		derv_conv1 = self.conv_backprop(derv_pool1,self.derivatives['conv_layer1_weights'],self.derivatives['conv_layer1_biases'],image)
+		derv_conv1 = self.conv_backprop(derv_pool1,self.derivatives['conv_layer1_weights'],self.derivatives['conv_layer1_biases'],self.layers['image'])
 		print(derv_conv1.shape)
 
 
-#image = np.random.randn(1,32,32,1)
-#cnn = CNN()
+image = np.random.randn(1,32,32,1)
+cnn = CNN()
 #cnn.initialize_parameters()
-#new_image = cnn.forward_prop(image)
+new_image = cnn.forward_prop(image)
 #print(new_image.shape)
 
