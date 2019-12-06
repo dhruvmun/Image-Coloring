@@ -160,12 +160,12 @@ class CNN:
 			for d in range(prev_channels):
 				for j in range(0,prev_row,2):
 					for k in range(0,prev_col,2):
-						arr=img2[j,k,d]
+						arr=img2[j:j+2,k:k+2,d]
 						result=np.where(arr==np.amax(arr))
-						coordinates=list(zip(result[0],result[1],result[2]))
+						coordinates=list(zip(result[0],result[1]))
 						for cord in coordinates:
-							x,y,z=cord
-							img2[x,y,z]=img[j//2,k//2,d]
+							x,y=cord
+							img2[x,y,d]=img[j//2,k//2,d]
 			conv_layer[i]=img2
 		return conv_layer
 
