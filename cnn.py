@@ -29,6 +29,7 @@ class CNN:
 		self.parameters['deconv_layer2_weights'] = np.random.normal(mean, std,(self.filter_size, self.filter_size, self.no_of_filters1, self.output_channels))
 		self.parameters['deconv_layer2_biases'] = np.zeros((1, self.no_of_filters1))
 
+
 	def initialize_derivatives(self, m):
 		self.derivatives['conv_layer1_weights'] = np.zeros((self.filter_size, self.filter_size, self.input_channels, self.no_of_filters1))
 		self.derivatives['conv_layer1_biases'] = np.zeros((1, self.no_of_filters1))
@@ -143,9 +144,9 @@ class CNN:
 				for c in range(col2):
 					x = img[r:r+self.filter_size, c:c+self.filter_size, :]
 					for f in range(nf):
-						da[r:r+self.filter_size, c:c+self.filter_size, :] += sigmoid_derv(z[i,r,c,f])*filter[:,:,:,f]*dz[i,r,c,f]
-						dW[:,:,:,f] += sigmoid_derv(z[i,r,c,f])*x * dz[i, r, c, f]
-						db[:,:,:,f] += sigmoid_derv(z[i,r,c,f])*dz[i, r, c, f]
+						da[r:r+self.filter_size, c:c+self.filter_size, :] += sigmoid_derv(z[i,r,c,f]) * filter[:,:,:,f]*dz[i,r,c,f])
+						dW[:,:,:,f] += sigmoid_derv(z[i,r,c,f])* x * dz[i, r, c, f]
+						db[:,:,:,f] += sigmoid_derv(z[i,r,c,f])* dz[i, r, c, f]
 			derv_prev_image[i, :, :, :] = da[pad:-pad, pad:-pad, :]
 		return derv_prev_image
 
@@ -153,7 +154,7 @@ class CNN:
 	def maxpool_backprop(self,der_deconv,layers):
 		# count, row, col, channels = der_deconv.shape
 		prev_count,prev_row,prev_col,prev_channels=layers.shape
-		conv_layer=np.zeros([prev_count,prev_row,prev_col,prev_channels])
+		conv_layer=np.zeros((prev_count,prev_row,prev_col,prev_channels))
 		for i in range(prev_count):
 			img=der_deconv[i]
 			img2=layers[i]
@@ -184,8 +185,16 @@ class CNN:
 
 		return unpooled_image
 
-	#def learning_algorithm():
+	def learning_algorithm():
+		self.parameters['conv_layer1_weights'] -= learning_rate * self.derivatives['conv_layer1_weights']
+		self.parameters['conv_layer1_biases'] -= learning_rate * self.derivatives['conv_layer1_biases']
+		self.parameters['conv_layer2_weights'] -= learning_rate * self.derivatives['conv_layer2_weights']
+		self.parameters['conv_layer2_biases'] -= learning_rate * self.derivatives['conv_layer2_biases']
 
+		self.parameters['deconv_layer1_weights'] -= learning_rate * self.derivatives['deconv_layer1_weights']
+		self.parameters['deconv_layer1_biases'] -= learning_rate * self.derivatives['deconv_layer1_biases']
+		self.parameters['deconv_layer2_weights'] -= learning_rate * self.derivatives['deconv_layer2_weights']
+		self.parameters['deconv_layer2_biases'] -= learning_rate * self.derivatives['deconv_layer2_biases']
 
 
 	def backprop(self,loss):
@@ -214,23 +223,20 @@ class CNN:
 		for i in range(count):
 			img = input[i]
 			img2 = output[i]
-			loss1 = loss[i]
 			for d in range(channel):
 				for r in range(row):
 					for c in range(col):
 						a = img[r, c, d]
 						b = img2[r, c, d]
-						loss1[r, c,d] = la.norm((a-b), ord=order)
-
-		return (np.sum(loss)) / (row * col * channel * count)
+						loss[i,r,c,d] = la.norm((a-b), ord=order)
+		return  loss
 
 
 	def train_model(self,inputs,outputs,batch_size,iters):
 		self.initialize_parameters()
 		self.initialize_derivatives()
+		
 		J=[]
-
-
 		for step in range(iters):
 			start = (step*batch_size)%(inputs.shape[0])
 			end = start+batch_size
@@ -251,7 +257,7 @@ class CNN:
 				print('Step : %d'%step)
 				print('Loss : %f'%loss)
 
-		return J,A
+		return J
 
 
 
