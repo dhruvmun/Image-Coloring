@@ -1,5 +1,6 @@
 import numpy as np
 import cnn
+from numpy import linalg as la
 class Pooling:
     def __init__(self,size):
         poolSize=size
@@ -34,3 +35,20 @@ class Pooling:
                         new_image[i,r:r+2,c:c+2,d]=img[r,c,d]
 
         return new_image
+
+    def Loss(self,input,output,order):
+        count,row,col,channel=input.shape
+        # no_of_images,row_images,col_images,channel_images=output.shape
+        loss = np.zeros([count,row, col])
+        for i in range(count):
+            img=input[i]
+            img2=output[i]
+            loss1=loss[i]
+            for r in range(row):
+                for c in range(col):
+                #     for d in range(channel):
+                    a=img[r,c]
+                    b=img2[r,c]
+                    loss1[r,c]=la.norm((a - b), ord=order)
+
+        return (np.sum(loss))/row*col*channel

@@ -1,8 +1,9 @@
 import numpy as np
+from numpy import linalg as la
 
 class CNN:
 	def __init__(self):
-		self.image_size = 28 
+		self.image_size = 28
 		self.input_channels = 1
 		self.output_channels = 3
 		self.filter_size = 3
@@ -12,6 +13,7 @@ class CNN:
 		self.parameters = dict()
 		self.derivatives = dict()
 		self.layers = dict()
+
 
 	def initialize_parameters(self):
 		mean = 0
@@ -95,11 +97,11 @@ class CNN:
 		count_image,row,col,channels=image.shape
 		new_image=np.zeros((count_image,2*row,2*col,channels))
 		for i in range(count_image):
-		    img=image[i]
-		    for r in range(row):
-		        for c in range(col):
-		            for d in range(channels):
-		                new_image[i,2*r:2*r+2,2*c:2*c+2,d]=img[r,c,d]                
+			img=image[i]
+			for r in range(row):
+				for c in range(col):
+					for d in range(channels):
+						new_image[i,2*r:2*r+2,2*c:2*c+2,d]=img[r,c,d]
 		return new_image
 
 
@@ -157,25 +159,9 @@ class CNN:
 	#def learning_algorithm():
 
 
-	def Loss(self, input, output, order):
-		count, row, col, channel = input.shape
-		# no_of_images,row_images,col_images,channel_images=output.shape
-		loss = np.zeros((count, row, col,channel))
-		for i in range(count):
-			img = input[i]
-			img2 = output[i]
-			#loss1 = loss[i]
-			for r in range(row):
-				for c in range(col):
-					for d in range(channel):
-						a = img[r, c, d]
-						b = img2[r, c, d]
-						loss[i,r, c,d] = la.norm((a - b), ord=order)
-		return loss
-		#return (np.sum(loss)) / (row * col * channel * count)
-
 
 	def backprop(self,loss):
+
 		derv_deconv2 = self.conv_backprop(loss,self.derivatives['deconv_layer2_weights'],self.derivatives['deconv_layer2_biases'],self.layers['unpool2'])
 		print(derv_deconv2.shape)
 		derv_unpool2 = self.unpool_backprop(derv_deconv2, self.layers['deconv_layer1'])
@@ -192,6 +178,23 @@ class CNN:
 		print(derv_pool1.shape)
 		derv_conv1 = self.conv_backprop(derv_pool1,self.derivatives['conv_layer1_weights'],self.derivatives['conv_layer1_biases'],self.layers['image'])
 		print(derv_conv1.shape)
+
+	def Loss(self, input, output, order):
+		count, row, col, channel = input.shape
+		# no_of_images,row_images,col_images,channel_images=output.shape
+		loss = np.zeros([count, row, col,channel])
+		for i in range(count):
+			img = input[i]
+			img2 = output[i]
+			loss1 = loss[i]
+			for r in range(row):
+				for c in range(col):
+					for d in range(channel):
+						a = img[r, c, d]
+						b = img2[r, c, d]
+						loss1[r, c,d] = la.norm((a - b), ord=order)
+
+		return (np.sum(loss)) / (row * col * channel * count)
 
 
 	def train_model(self,inputs,outputs,batch_size,iters):
@@ -221,5 +224,6 @@ class CNN:
 				print('Loss : %f'%loss)
 
 		return J,A
+
 
 
