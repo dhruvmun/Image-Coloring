@@ -47,7 +47,7 @@ class CNN:
 		return 1/(1+np.exp(-1*x))
 
 	def sigmoid_derv(self, x):
-		return self.sigmoid(x)*(1-self.sigmoid(x))
+		return x*(1-x)
 
 
 	def conv(self, X,w,b):
@@ -151,11 +151,39 @@ class CNN:
 		return derv_prev_image
 
 
-	#def maxpool_backprop():
+	def maxpool_backprop(self,der_deconv,layers):
+		# count, row, col, channels = der_deconv.shape
+		prev_count,prev_row,prev_col,prev_channels=layers.shape
+		conv_layer=np.zeros((prev_count,prev_row,prev_col,prev_channels))
+		for i in range(prev_count):
+			img=der_deconv[i]
+			img2=layers[i]
+			for d in range(prev_channels):
+				for j in range(0,prev_row,2):
+					for k in range(0,prev_col,2):
+						arr=img2[j,k,d]
+						result=np.where(arr==np.amax(arr))
+						coordinates=list(zip(result[0],result[1],result[2]))
+						for cord in coordinates:
+							x,y,z=cord
+							img2[x,y,z]=img[j//2,k//2,d]
+			conv_layer[i]=img2
+		return conv_layer
 
 
-	#def unpool_backprop():
 
+	def unpool_backprop(self,derv_deconv):
+		count,row,col,channels=derv_deconv.shape
+		unpooled_image=np.zeros([count,row//2,col//2,channels])
+		for i in range(count):
+			img=derv_deconv[i]
+			unpool=unpooled_image[i]
+			for d in range(channels):
+				for j in range(0,row,2):
+					for k in range(0,col,2):
+						unpool[j//2,k//2,d]=np.sum(img[j:j+2,k:k+2,d])
+
+		return unpooled_image
 
 	#def learning_algorithm():
 
@@ -165,17 +193,17 @@ class CNN:
 
 		derv_deconv2 = self.conv_backprop(loss,self.derivatives['deconv_layer2_weights'],self.derivatives['deconv_layer2_biases'],self.layers['unpool2'])
 		print(derv_deconv2.shape)
-		derv_unpool2 = self.unpool_backprop(derv_deconv2, self.layers['deconv_layer1'])
+		derv_unpool2 = self.unpool_backprop(derv_deconv2)
 		print(derv_unpool2.shape)
 		derv_deconv1 = self.conv_backprop(derv_unpool2,self.derivatives['deconv_layer1_weights'],self.derivatives['deconv_layer1_biases'],self.layers['unpool1'])
 		print(derv_deconv1.shape)
-		derv_unpool1 = self.unpool_backprop(derv_deconv2, self.layers['maxpool2'])
+		derv_unpool1 = self.unpool_backprop(derv_deconv2)
 		print(derv_unpool2.shape)		
-		derv_pool2 = self.unpool_backprop(derv_unpool1, self.layers['conv_layer2'])
+		derv_pool2 = self.maxpool_backprop(derv_unpool1, self.layers['conv_layer2'])
 		print(derv_pool2.shape)
 		derv_conv2 = self.conv_backprop(derv_pool2,self.derivatives['conv_layer2_weights'],self.derivatives['conv_layer2_biases'],self.layers['maxpool1'])
 		print(derv_conv2.shape)
-		derv_pool1 = self.unpool_backprop(derv_conv2, self.layers['conv_layer1'])
+		derv_pool1 = self.maxpool_backprop(derv_conv2, self.layers['conv_layer1'])
 		print(derv_pool1.shape)
 		derv_conv1 = self.conv_backprop(derv_pool1,self.derivatives['conv_layer1_weights'],self.derivatives['conv_layer1_biases'],self.layers['image'])
 		print(derv_conv1.shape)
@@ -187,23 +215,20 @@ class CNN:
 		for i in range(count):
 			img = input[i]
 			img2 = output[i]
-			loss1 = loss[i]
-			for r in range(row):
-				for c in range(col):
-					for d in range(channel):
+			for d in range(channel):
+				for r in range(row):
+					for c in range(col):
 						a = img[r, c, d]
 						b = img2[r, c, d]
-						loss1[r, c,d] = la.norm((a - b), ord=order)
-
-		return (np.sum(loss)) / (row * col * channel * count)
+						loss[i,r,c,d] = la.norm((a-b), ord=order)
+		return  loss
 
 
 	def train_model(self,inputs,outputs,batch_size,iters):
 		self.initialize_parameters()
 		self.initialize_derivatives()
-
-		J.append(loss)
-
+		
+		J=[]
 		for step in range(iters):
 			start = (step*batch_size)%(inputs.shape[0])
 			end = start+batch_size
@@ -211,9 +236,9 @@ class CNN:
 			batch_input = inputs[start:end,:,:,:]
 			batch_output = outputs[start:end,:]
 
-			self.forward_propagation(batch_input)
+			self.forward_prop(batch_input)
 			loss = self.Loss(batch_output, self.layers['deconv_layer2'], order)
-			self.backward_propagation(loss)
+			self.backprop(loss)
 			self.learning_algorithm()
 
 			#append the loss and accuracy of every batch
@@ -224,7 +249,7 @@ class CNN:
 				print('Step : %d'%step)
 				print('Loss : %f'%loss)
 
-		return J,A
+		return J
 
 
 
