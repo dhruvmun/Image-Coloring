@@ -29,6 +29,7 @@ class CNN:
 		self.parameters['deconv_layer2_weights'] = np.random.normal(mean, std,(self.filter_size, self.filter_size, self.no_of_filters1, self.output_channels))
 		self.parameters['deconv_layer2_biases'] = np.zeros((1, self.no_of_filters1))
 
+
 	def initialize_derivatives(self, m):
 		self.derivatives['conv_layer1_weights'] = np.zeros((self.filter_size, self.filter_size, self.input_channels, self.no_of_filters1))
 		self.derivatives['conv_layer1_biases'] = np.zeros((1, self.no_of_filters1))
@@ -126,7 +127,7 @@ class CNN:
 		print(self.layers['deconv_layer2'].shape)
 
 
-	def conv_backprop(self,dz,filter,bias,image):
+	def conv_backprop(self,dz,z,filter,bias,image):
 		m,row1,col1,channels1 = image.shape
 		nf = filter.shape[3]
 		_,row2,col2,_ = dz.shape
@@ -143,9 +144,9 @@ class CNN:
 				for c in range(col2):
 					x = img[r:r+self.filter_size, c:c+self.filter_size, :]
 					for f in range(nf):
-						da[r:r+self.filter_size, c:c+self.filter_size, :] += sigmoid_derv(filter[:,:,:,f]*dz[i, r, c, f])
-						dW[:,:,:,f] += x * dz[i, r, c, f]
-						db[:,:,:,f] += dz[i, r, c, f]
+						da[r:r+self.filter_size, c:c+self.filter_size, :] += sigmoid_derv(z[i,r,c,f]) * filter[:,:,:,f]*dz[i,r,c,f])
+						dW[:,:,:,f] += sigmoid_derv(z[i,r,c,f])* x * dz[i, r, c, f]
+						db[:,:,:,f] += sigmoid_derv(z[i,r,c,f])* dz[i, r, c, f]
 			derv_prev_image[i, :, :, :] = da[pad:-pad, pad:-pad, :]
 		return derv_prev_image
 
