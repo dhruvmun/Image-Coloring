@@ -185,7 +185,7 @@ class CNN:
 
 		return unpooled_image
 
-	def learning_algorithm():
+	def learning_algorithm(self):
 		self.parameters['conv_layer1_weights'] -= learning_rate * self.derivatives['conv_layer1_weights']
 		self.parameters['conv_layer1_biases'] -= learning_rate * self.derivatives['conv_layer1_biases']
 		self.parameters['conv_layer2_weights'] -= learning_rate * self.derivatives['conv_layer2_weights']
