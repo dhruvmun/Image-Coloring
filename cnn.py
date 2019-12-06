@@ -124,9 +124,6 @@ class CNN:
 		print(self.layers['deconv_layer2'].shape)
 
 
-	
-
-
 	def conv_backprop(self,dz,filter,bias,image):
 		m,row1,col1,channels1 = image.shape
 		nf = filter.shape[3]
