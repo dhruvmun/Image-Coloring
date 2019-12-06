@@ -177,6 +177,23 @@ class CNN:
 		derv_conv1 = self.conv_backprop(derv_pool1,self.derivatives['conv_layer1_weights'],self.derivatives['conv_layer1_biases'],self.layers['image'])
 		print(derv_conv1.shape)
 
+	def Loss(self, input, output, order):
+		count, row, col, channel = input.shape
+		# no_of_images,row_images,col_images,channel_images=output.shape
+		loss = np.zeros([count, row, col])
+		for i in range(count):
+			img = input[i]
+			img2 = output[i]
+			loss1 = loss[i]
+			for r in range(row):
+				for c in range(col):
+					#     for d in range(channel):
+					a = img[r, c]
+					b = img2[r, c]
+					loss1[r, c] = la.norm((a - b), ord=order)
+
+		return (np.sum(loss)) / row * col * channel
+
 
 image = np.random.randn(1,32,32,1)
 cnn = CNN()
