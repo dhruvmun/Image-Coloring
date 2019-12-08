@@ -199,6 +199,7 @@ class CNN:
 		self.parameters['conv_layer2_weights'] -= self.learning_rate * self.derivatives['conv_layer2_weights']
 		self.parameters['conv_layer2_biases'] -= self.learning_rate * self.derivatives['conv_layer2_biases']
 
+
 		self.parameters['deconv_layer1_weights'] -= self.learning_rate * self.derivatives['deconv_layer1_weights']
 		self.parameters['deconv_layer1_biases'] -= self.learning_rate * self.derivatives['deconv_layer1_biases']
 		self.parameters['deconv_layer2_weights'] -= self.learning_rate * self.derivatives['deconv_layer2_weights']
