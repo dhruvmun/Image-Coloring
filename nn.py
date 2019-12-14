@@ -24,17 +24,19 @@ class NN:
 		return float(1)/(1+np.exp(-1*x))
 
 	def sigmoid_derv(self,x):
-		return self.sigmoid(x)*(1-self.sigmoid(x))
-
+		return (x)*(1-(x))
 
 	def linear_forward(self,W,X,b):
 		return self.sigmoid(np.dot(W,X)+b)
 
+	def linear_forward_without_sigmoid(self,W,X,b):	
+		return np.dot(W,X)+b
+
 	def forward_prop(self,input_image):
 		self.layers['hidden_layer1'] = self.linear_forward(self.parameters['W1'], input_image, self.parameters['b1'])
 		self.layers['hidden_layer2'] = self.linear_forward(self.parameters['W2'], self.layers['hidden_layer1'], self.parameters['b2'])
-		self.layers['output_layer'] = self.linear_forward(self.parameters['W3'], self.layers['hidden_layer2'], self.parameters['b3'])
-		#return self.layers['output_layer']
+		self.layers['output_layer'] = self.linear_forward_without_sigmoid(self.parameters['W3'], self.layers['hidden_layer2'], self.parameters['b3'])
+		# return self.layers['output_layer']
 
 	def backward_prop(self, input_image,y):
 		

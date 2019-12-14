@@ -19,9 +19,9 @@ import pdb
 
 
 IMAGE_DIMENSION = 32
-NO_OF_IMAGES = 999
-IP_IMG_PATH = 'deerB/B'
-OP_IMG_PATH = 'deerC/C'
+NO_OF_IMAGES = 10
+IP_IMG_PATH = 'dataset/beach'
+# OP_IMG_PATH = 'deerC/C'
 
 input_image = np.zeros((32*32, NO_OF_IMAGES))
 output_image = np.zeros((32*32*3, NO_OF_IMAGES))
